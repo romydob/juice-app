@@ -1,36 +1,26 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+"use client";
 
-import SupabaseProvider from "@/components/SupabaseProvider"; // ✅ you already made/imported this
+import { useState, useEffect, ReactNode } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { Session } from "@supabase/supabase-js";
+import SupabaseProvider from "@/components/SupabaseProvider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+export default function RootLayout({ children }: { children: ReactNode }) {
+  const supabase = createClientComponentClient();
+  const [session, setSession] = useState<Session | null>(null);
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+  useEffect(() => {
+    const getSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session);
+    };
+    getSession();
+  }, [supabase]);
 
-export const metadata: Metadata = {
-  title: "Juice App",
-  description: "Cafe contest voting platform",
-};
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {/* 👇 Wrap the entire app with SupabaseProvider */}
-        <SupabaseProvider>
+      <body>
+        <SupabaseProvider session={session}>
           {children}
         </SupabaseProvider>
       </body>

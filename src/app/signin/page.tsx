@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createBrowserClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useSupabase } from "@/components/SupabaseProvider";
 
@@ -11,96 +10,169 @@ export default function SignInPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState<"chooseLogin" | "enterOTP" | "loggedIn">("chooseLogin");
+  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
+  // --- Traditional login ---
+  const handlePasswordLogin = async () => {
     setLoading(true);
-    setError(null);
+    setMessage(null);
 
-    const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+    const { error, data } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
 
     if (error) {
-        setError(error.message);
-        setLoading(false);
-        return;
-    }
-
-    // Wait for session to exist
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-        router.push("/test");
+      setMessage(`❌ ${error.message}`);
+    } else if (data.session) {
+      setMessage("✅ Logged in successfully!");
+      setStep("loggedIn");
     } else {
-        setError("❌ Login succeeded but session is missing.");
+      setMessage("❌ Login succeeded but session missing.");
     }
 
     setLoading(false);
-    };
-    const handleForgotPassword = async () => {
-    if (!email) {
-        setError("❌ Please enter your email first.");
-        return;
-    }
+  };
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: "http://localhost:3000/auth/reset-password",
+  // --- OTP login ---
+  const handleSendOtp = async () => {
+    if (!email) return setMessage("❌ Enter your email first.");
+    setLoading(true);
+    setMessage(null);
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: false },
     });
 
+    if (error) setMessage(`❌ ${error.message}`);
+    else setStep("enterOTP");
 
-    if (error) setError(`❌ ${error.message}`);
-    else setError("✅ Check your email for password reset instructions!");
-    };
+    setLoading(false);
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp) return setMessage("❌ Enter the OTP.");
+    setLoading(true);
+    setMessage(null);
+
+    const { data: { session }, error } = await supabase.auth.verifyOtp({
+      email,
+      token: otp,
+      type: "email",
+    });
+
+    if (error) setMessage(`❌ ${error.message}`);
+    else if (session) setStep("loggedIn");
+
+    setLoading(false);
+  };
+
+  // --- Optional password change ---
+  const handleChangePassword = async () => {
+    if (!password) return setMessage("❌ Enter a new password.");
+    setLoading(true);
+    setMessage(null);
+
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) setMessage(`❌ ${error.message}`);
+    else {
+      setMessage("✅ Password updated! Redirecting...");
+      setTimeout(() => router.push("/"), 2000);
+    }
+
+    setLoading(false);
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-sm bg-white shadow-md rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-4 text-center">Sign In</h1>
-        <form onSubmit={handleSignIn} className="space-y-4">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full border rounded p-2"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border rounded p-2"
-            required
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-          >
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
-        </form>
-        {error && <p className="text-red-500 mt-3 text-sm">{error}</p>}
+      <div className="w-full max-w-sm bg-white shadow-md rounded-lg p-6 space-y-4">
+        <h1 className="text-2xl font-bold text-center">Sign In</h1>
 
-        <p className="text-sm text-center mt-4">
-          Don’t have an account?{" "}
-          <a href="/signup" className="text-blue-600 hover:underline">
-            Sign Up
-          </a>
-        </p>
-        <p className="text-sm text-center mt-2">
-        <button
-            type="button"
-            className="text-blue-600 hover:underline"
-            onClick={handleForgotPassword}
-        >
-            Forgot Password?
-        </button>
-        </p>
+        {step === "chooseLogin" && (
+          <>
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full border rounded p-2"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border rounded p-2"
+            />
+            <button
+              onClick={handlePasswordLogin}
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+            >
+              {loading ? "Signing in…" : "Sign in with Password"}
+            </button>
+            <button
+              onClick={handleSendOtp}
+              disabled={loading}
+              className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 mt-2"
+            >
+              {loading ? "Sending OTP…" : "Sign in with OTP"}
+            </button>
+          </>
+        )}
+
+        {step === "enterOTP" && (
+          <>
+            <p className="text-sm text-center text-gray-600">Enter the OTP sent to {email}</p>
+            <input
+              type="text"
+              placeholder="OTP code"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              className="w-full border rounded p-2"
+            />
+            <button
+              onClick={handleVerifyOtp}
+              disabled={loading}
+              className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700"
+            >
+              {loading ? "Verifying…" : "Verify OTP"}
+            </button>
+          </>
+        )}
+
+        {step === "loggedIn" && (
+          <>
+            <p className="text-sm text-center text-gray-600">You are logged in! You can change your password if desired:</p>
+            <input
+              type="password"
+              placeholder="New password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border rounded p-2"
+            />
+            <button
+              onClick={handleChangePassword}
+              disabled={loading}
+              className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700"
+            >
+              {loading ? "Updating…" : "Update Password"}
+            </button>
+          </>
+        )}
+
+        {message && (
+          <p
+            className={`text-center ${message.startsWith("✅") ? "text-green-600" : "text-red-500"}`}
+          >
+            {message}
+          </p>
+        )}
       </div>
     </div>
   );

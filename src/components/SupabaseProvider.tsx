@@ -1,33 +1,35 @@
-'use client'
+"use client";
 
-import { createContext, useContext, useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { Session, SupabaseClient } from '@supabase/supabase-js'
+import { createContext, useContext, useState } from "react";
+import { Session } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
 
-type SupabaseContext = {
-  supabase: SupabaseClient
-  session: Session | null
-}
+type SupabaseContextType = {
+  supabase: ReturnType<typeof createClient>;
+  session: Session | null;
+};
 
-const Context = createContext<SupabaseContext | undefined>(undefined)
+const Context = createContext<SupabaseContextType | undefined>(undefined);
 
-export default function SupabaseProvider({
+export const SupabaseProvider = ({
   children,
-  session
+  session,
 }: {
-  children: React.ReactNode
-  session: Session | null
-}) {
-  const [supabase] = useState(() => createClientComponentClient())
+  children: React.ReactNode;
+  session: Session | null;
+}) => {
+  const [supabase] = useState(() => createClient());
+
   return (
     <Context.Provider value={{ supabase, session }}>
       {children}
     </Context.Provider>
-  )
-}
+  );
+};
 
 export const useSupabase = () => {
-  const ctx = useContext(Context)
-  if (!ctx) throw new Error('useSupabase must be used inside SupabaseProvider')
-  return ctx
-}
+  const context = useContext(Context);
+  if (!context) throw new Error("useSupabase must be used inside SupabaseProvider");
+  return context;
+};
+export default SupabaseProvider;

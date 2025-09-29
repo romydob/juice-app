@@ -1,38 +1,20 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 
-import { createServerClient, type CookieOptions } from "@supabase/ssr";
-import { type NextRequest, NextResponse } from "next/server";
+export async function middleware(req: NextRequest) {
+  // Create Supabase client for server
+  const supabase = createServerComponentClient({ cookies });
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // Get current session
+  const {
+     data: { session } } = await supabase.auth.getSession();
 
-export const createClient = (request: NextRequest) => {
-  // Create an unmodified response
-  let supabaseResponse = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  });
+  // Example: redirect if not logged in
+  if (!session) {
+    return NextResponse.redirect(new URL("/signin", req.url));
+  }
 
-  const supabase = createServerClient(
-    supabaseUrl!,
-    supabaseKey!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-        },
-      },
-    },
-  );
-
-  return supabaseResponse
-};
+  // Proceed normally
+  return NextResponse.next();
+}

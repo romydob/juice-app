@@ -11,9 +11,15 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     const handleAuthCallback = async () => {
-      const { data, error } = await supabase.auth.getSessionFromUrl({
-        storeSession: true,
-      });
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+
+      if (!code) {
+        setStatus("❌ Missing auth code in callback URL");
+        return;
+      }
+
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
       if (error) {
         setStatus(`❌ Error: ${error.message}`);
@@ -27,18 +33,9 @@ export default function AuthCallbackPage() {
         return;
       }
 
-      // Check if this is a password recovery
-      if (data.url?.includes("type=recovery")) {
-        
-        setStatus("✅ Password recovery detected. Redirecting...");
-        await supabase.auth.signOut();
-        router.push("/reset-password");
-        return;
-      }
-
       // Normal login / signup confirmation
       setStatus("✅ Login successful! Redirecting...");
-      router.push("/test");
+      router.push("/test"); // change to wherever you want after login
     };
 
     handleAuthCallback();
