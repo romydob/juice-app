@@ -71,6 +71,7 @@ export default function SignupPage() {
           className="border p-2"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
+          required
         />
         <button type="submit" className="bg-blue-600 text-white p-2">
           Sign Up

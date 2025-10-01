@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useSupabase } from "@/components/SupabaseProvider";
 import { User } from "@supabase/supabase-js";
 
-// Define a type for your user profile metadata
 interface UserProfile extends User {
   user_metadata: {
     display_name?: string;
@@ -23,7 +22,6 @@ export default function EditProfilePage() {
   const [message, setMessage] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Fetch current user
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
@@ -35,7 +33,7 @@ export default function EditProfilePage() {
       }
 
       if (!session?.user) {
-        router.push("/signin"); // redirect if not logged in
+        router.push("/signin");
         return;
       }
 
@@ -47,7 +45,6 @@ export default function EditProfilePage() {
     fetchUser();
   }, [supabase, router]);
 
-  // Handle profile update
   const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user) return;
@@ -55,7 +52,6 @@ export default function EditProfilePage() {
     setMessage("");
     setLoading(true);
 
-    // Build updates object
     const updates: { data?: { display_name?: string }; password?: string } = {};
     if (displayName !== user.user_metadata?.display_name) {
       updates.data = { display_name: displayName };
@@ -80,6 +76,11 @@ export default function EditProfilePage() {
     setLoading(false);
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push("/signin");
+  };
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -89,8 +90,18 @@ export default function EditProfilePage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-6">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-6">
       <div className="w-full max-w-md bg-white shadow-md rounded-lg p-6">
+        {/* Logout button */}
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={handleLogout}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+          >
+            Logout
+          </button>
+        </div>
+
         <h1 className="text-2xl font-bold mb-4 text-center">Edit Profile</h1>
 
         <form onSubmit={handleUpdate} className="flex flex-col gap-4">

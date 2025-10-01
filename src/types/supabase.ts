@@ -18,23 +18,26 @@ export type Database = {
         Row: {
           end_date: string | null
           id: string
+          is_active: boolean
           name: string
+          numeric_id: number
           start_date: string | null
-          status: string | null
         }
         Insert: {
           end_date?: string | null
           id?: string
+          is_active: boolean
           name: string
+          numeric_id?: number
           start_date?: string | null
-          status?: string | null
         }
         Update: {
           end_date?: string | null
           id?: string
+          is_active?: boolean
           name?: string
+          numeric_id?: number
           start_date?: string | null
-          status?: string | null
         }
         Relationships: []
       }
@@ -42,31 +45,34 @@ export type Database = {
         Row: {
           contest_id: string
           created_at: string | null
-          creator_name: string
           description: string | null
+          dietary_tags: Database["public"]["Enums"]["dietary_tags"][] | null
           drink_name: string
           id: string
-          recipe: string | null
+          image_url: string | null
+          ingredients: string | null
           user_id: string | null
         }
         Insert: {
           contest_id?: string
           created_at?: string | null
-          creator_name: string
           description?: string | null
+          dietary_tags?: Database["public"]["Enums"]["dietary_tags"][] | null
           drink_name: string
           id?: string
-          recipe?: string | null
+          image_url?: string | null
+          ingredients?: string | null
           user_id?: string | null
         }
         Update: {
           contest_id?: string
           created_at?: string | null
-          creator_name?: string
           description?: string | null
+          dietary_tags?: Database["public"]["Enums"]["dietary_tags"][] | null
           drink_name?: string
           id?: string
-          recipe?: string | null
+          image_url?: string | null
+          ingredients?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -126,7 +132,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      dietary_tags: "Vegan" | "Gluten-Free" | "Dairy-Free" | "Nut-Free"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -253,6 +259,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      dietary_tags: ["Vegan", "Gluten-Free", "Dairy-Free", "Nut-Free"],
+    },
   },
 } as const

@@ -1,35 +1,23 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* ========================
-   Root design tokens
-   ======================== */
 :root {
-  /* Colors */
   --color-background: #ffffff;
   --color-foreground: #171717;
-  --color-primary: #4f46e5;      /* Indigo */
-  --color-secondary: #f3f4f6;    /* Light Gray */
-  --color-accent: #f59e0b;       /* Amber */
-  --color-error: #ef4444;        /* Red */
-  --color-success: #22c55e;      /* Green */
+  --color-primary: #4f46e5;
+  --color-accent: #f59e0b;
 
-  /* Fonts */
-  --font-body: 'Inter', Arial, Helvetica, sans-serif;
-  --font-display: 'Playfair Display', serif;
+  --font-body: 'Inter', sans-serif;         /* Body font */
+  --font-display: 'Racing Sans One', sans-serif; /* Heading font */
 
-  /* Spacing */
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
   --space-lg: 24px;
   --space-xl: 32px;
 
-  /* Border radius */
-  --radius-sm: 4px;
   --radius-md: 8px;
-  --radius-lg: 16px;
 }
 
 /* ========================
@@ -38,17 +26,16 @@
 body {
   background: var(--color-background);
   color: var(--color-foreground);
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   line-height: 1.6;
   margin: 0;
   padding: 0;
 }
-/* Headings */
+
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
 }
 
-/* Links */
 a {
   color: var(--color-primary);
   text-decoration: none;
@@ -57,9 +44,8 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Buttons */
 button {
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
   border-radius: var(--radius-md);
   padding: var(--space-sm) var(--space-md);
   cursor: pointer;

@@ -1,9 +1,23 @@
 "use client";
 
+import { Racing_Sans_One, Inter } from "next/font/google";
 import { useState, useEffect, ReactNode } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Session } from "@supabase/supabase-js";
 import SupabaseProvider from "@/components/SupabaseProvider";
+import "./globals.css";
+
+// Import fonts
+const racingSansOne = Racing_Sans_One({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-racing-sans", // <-- keep this
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-body",
+});
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   const supabase = createClientComponentClient();
@@ -18,11 +32,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   }, [supabase]);
 
   return (
-    <html lang="en">
+    <html lang="en" className={`${racingSansOne.variable} font-body`}>
       <body>
-        <SupabaseProvider session={session}>
-          {children}
-        </SupabaseProvider>
+        <SupabaseProvider session={session}>{children}</SupabaseProvider>
       </body>
     </html>
   );
