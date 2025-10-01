@@ -47,15 +47,7 @@ export default function HomePage() {
 
   return (
     <div className="flex h-screen flex-col bg-background text-foreground font-body">
-      {/* Top right edit profile button */}
-      <div className="flex justify-end p-4">
-        <Link
-          href="/edit-profile"
-          className="rounded-lg bg-primary px-4 py-2 text-white shadow hover:bg-primary/90 transition"
-        >
-          Edit Profile
-        </Link>
-      </div>
+      
 
       {/* Center content */}
       <div className="flex flex-1 flex-col items-center justify-center text-center px-4">

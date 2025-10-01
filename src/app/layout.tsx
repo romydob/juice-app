@@ -6,6 +6,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Session } from "@supabase/supabase-js";
 import SupabaseProvider from "@/components/SupabaseProvider";
 import "./globals.css";
+import Navbar from '@/components/navbar';
 
 // Import fonts
 const racingSansOne = Racing_Sans_One({
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${racingSansOne.variable} font-body`}>
       <body>
+        <Navbar />
         <SupabaseProvider session={session}>{children}</SupabaseProvider>
       </body>
     </html>
