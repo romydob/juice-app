@@ -123,6 +123,12 @@ export default function SignInPage() {
             >
               {loading ? "Sending OTP…" : "Sign in with OTP"}
             </button>
+            <button
+              onClick={() => router.push("/signup")}
+              className="w-full bg-gray-300 text-gray-800 py-2 rounded hover:bg-gray-400 mt-2"
+            >
+              Sign up
+            </button>
           </>
         )}
 

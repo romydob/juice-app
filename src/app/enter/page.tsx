@@ -5,6 +5,7 @@ import { useSupabase } from "@/components/SupabaseProvider";
 import imageCompression from "browser-image-compression";
 import Image from "next/image";
 import { Database } from "@/types/supabase";
+import { useRouter } from "next/navigation";
 
 type EntryInsert = Database["public"]["Tables"]["entries"]["Insert"];
 type DietaryTag = Database["public"]["Enums"]["dietary_tags"];
@@ -25,7 +26,17 @@ export default function EntryForm() {
 
   const dietaryOptions: DietaryTag[] = ["Vegan", "Dairy-Free", "Gluten-Free", "Nut-Free"];
   const imageOptions = { maxSizeMB: 1, maxWidthOrHeight: 1024, useWebWorker: true };
+  const router = useRouter();
 
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        router.replace("/signin");
+      }
+    };
+    checkSession();
+  }, [supabase, router]);
   // Fetch user session and active contest
   useEffect(() => {
     const fetchData = async () => {

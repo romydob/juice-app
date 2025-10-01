@@ -77,7 +77,11 @@ export default function EditProfilePage() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      setMessage(`❌ ${error.message}`);
+      return;
+    }
     router.push("/signin");
   };
 

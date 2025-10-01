@@ -27,6 +27,12 @@ const Navbar: React.FC = () => {
                 <li>
                     <Link href="/edit-profile" style={{ textDecoration: 'none', color: '#333' }}>Edit Profile</Link>
                 </li>
+                <li>
+                    <Link href="/hall-of-fame" style={{ textDecoration: 'none', color: '#333' }}>Hall of Fame</Link>
+                </li>
+                <li>
+                    <Link href="/my-entries" style={{ textDecoration: 'none', color: '#333' }}>My Entries</Link>
+                </li>
             </ul>
         </nav>
     );
