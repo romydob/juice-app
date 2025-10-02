@@ -16,7 +16,7 @@ export default function HomePage() {
         <div className="flex flex-col sm:flex-row gap-4">
           <Link href="/enter">
             <button className="btn btn-primary px-6 py-3 rounded-lg shadow-lg font-display text-lg transition hover:bg-primary/90">
-              Enter
+              Enter ($20)
             </button>
           </Link>
           <Link href="/rules">
