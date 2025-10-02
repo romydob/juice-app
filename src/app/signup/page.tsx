@@ -18,7 +18,7 @@ export default function SignupPage() {
     email,
     password,
     options: {
-      emailRedirectTo: "http://localhost:3000/auth/callback",
+      emailRedirectTo: "/auth/callback",
       data: { display_name: displayName }, // <-- store in user_metadata
     },
   });
@@ -37,7 +37,7 @@ export default function SignupPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: "http://localhost:3000/auth/callback",
+        emailRedirectTo: "/auth/callback",
       },
     });
 
