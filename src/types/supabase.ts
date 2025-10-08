@@ -124,6 +124,30 @@ export type Database = {
           },
         ]
       }
+      votes: {
+      Row: {
+        id: string;           // auto-generated primary key
+        entry_id: string;     // FK to entries.id
+        created_at: string;   // timestamp
+      };
+      Insert: {
+        entry_id: string;
+        created_at?: string;  // optional, defaults to now
+      };
+      Update: {
+        entry_id?: string;
+        created_at?: string;
+      };
+      Relationships: [
+        {
+          foreignKeyName: "votes_entry_id_fkey";
+          columns: ["entry_id"];
+          isOneToOne: false;
+          referencedRelation: "entries";
+          referencedColumns: ["id"];
+        }
+      ];
+    };
     }
     Views: {
       [_ in never]: never
@@ -137,6 +161,7 @@ export type Database = {
     CompositeTypes: {
       [_ in never]: never
     }
+    
   }
 }
 
