@@ -25,23 +25,19 @@ export default function EditProfilePage() {
   useEffect(() => {
     const fetchUser = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
-
       if (error) {
         setMessage(`❌ ${error.message}`);
         setLoading(false);
         return;
       }
-
       if (!session?.user) {
         router.push("/signin");
         return;
       }
-
       setUser(session.user as UserProfile);
       setDisplayName(session.user.user_metadata?.display_name || "");
       setLoading(false);
     };
-
     fetchUser();
   }, [supabase, router]);
 
@@ -53,9 +49,7 @@ export default function EditProfilePage() {
     setLoading(true);
 
     const updates: { data?: { display_name?: string }; password?: string } = {};
-    if (displayName !== user.user_metadata?.display_name) {
-      updates.data = { display_name: displayName };
-    }
+    if (displayName !== user.user_metadata?.display_name) updates.data = { display_name: displayName };
     if (password) updates.password = password;
 
     if (Object.keys(updates).length === 0) {
@@ -65,10 +59,8 @@ export default function EditProfilePage() {
     }
 
     const { error } = await supabase.auth.updateUser(updates);
-
-    if (error) {
-      setMessage(`❌ ${error.message}`);
-    } else {
+    if (error) setMessage(`❌ ${error.message}`);
+    else {
       setMessage("✅ Profile updated successfully!");
       setPassword("");
     }
@@ -87,59 +79,100 @@ export default function EditProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div style={{ display: "flex", minHeight: "100vh", justifyContent: "center", alignItems: "center" }}>
         <p>Loading profile…</p>
       </div>
     );
   }
 
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    maxWidth: "300px",
+    padding: "0.75rem 1rem",
+    marginBottom: "1rem",
+    borderRadius: "var(--radius-md)",
+    border: "2px solid var(--color-red)",
+    fontSize: "1rem",
+    fontFamily: "var(--font-body)",
+  };
+
+  const mainButtonStyle: React.CSSProperties = {
+    width: "100%",
+    maxWidth: "300px",
+    padding: "0.75rem 1rem",
+    borderRadius: "var(--radius-md)",
+    fontFamily: "var(--font-body)",
+    fontSize: "1rem",
+    fontWeight: "bold",
+    cursor: "pointer",
+    border: "none",
+    backgroundColor: "var(--color-red)",
+    color: "var(--color-white)",
+    transition: "all 0.2s ease",
+    marginBottom: "0.5rem",
+  };
+
+  const secondaryButtonStyle: React.CSSProperties = {
+    width: "100%",
+    maxWidth: "300px",
+    padding: "0.75rem 1rem",
+    borderRadius: "var(--radius-md)",
+    border: "2px solid var(--color-red)",
+    backgroundColor: "var(--color-white)",
+    color: "var(--color-red)",
+    fontFamily: "var(--font-body)",
+    cursor: "pointer",
+    marginBottom: "0.5rem",
+  };
+
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-6">
-      <div className="w-full max-w-md bg-white shadow-md rounded-lg p-6">
-        {/* Logout button */}
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-          >
-            Logout
-          </button>
-        </div>
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "var(--color-green)",
+        padding: "2rem",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "400px",
+          backgroundColor: "var(--color-yellow)",
+          padding: "2rem",
+          borderRadius: "var(--radius-md)",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        
 
-        <h1 className="text-2xl font-bold mb-4 text-center">Edit Profile</h1>
+        <h1 style={{ fontFamily: "var(--font-display)", fontSize: "2rem", marginBottom: "1rem", color: "var(--color-white)", textAlign: "center" }}>
+          Edit Profile
+        </h1>
 
-        <form onSubmit={handleUpdate} className="flex flex-col gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Display Name</label>
-            <input
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              className="w-full border rounded p-2"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">New Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Leave blank to keep current password"
-              className="w-full border rounded p-2"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-green-600 text-white py-2 rounded hover:bg-green-700"
-          >
+        <form onSubmit={handleUpdate} style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+          <input type="text" placeholder="Display Name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} style={inputStyle} />
+          <input
+            type="password"
+            placeholder="New password (blank to keep current)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={inputStyle}
+          />
+          <button type="submit" disabled={loading} style={mainButtonStyle}>
             {loading ? "Updating…" : "Update Profile"}
+          </button>
+          <button onClick={handleLogout} style={mainButtonStyle}>
+            Logout
           </button>
         </form>
 
-        {message && <p className="mt-4 text-center text-sm font-medium">{message}</p>}
+        {message && <p style={{ marginTop: "1rem", textAlign: "center", color: message.startsWith("✅") ? "var(--color-white)" : "var(--color-red)" }}>{message}</p>}
       </div>
     </div>
   );

@@ -44,16 +44,38 @@ export default function MyEntries() {
 
   if (!userId) return null;
 
+  const containerStyle: React.CSSProperties = {
+    minHeight: "100vh",
+    backgroundColor: "var(--color-green)",
+    padding: "2rem",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontFamily: "var(--font-display)",
+    fontSize: "2rem",
+    fontWeight: "bold",
+    color: "var(--color-white)",
+    marginBottom: "2rem",
+    textAlign: "center",
+  };
+
+  const noEntriesStyle: React.CSSProperties = {
+    color: "var(--color-white)",
+    fontSize: "1rem",
+    textAlign: "center",
+  };
+
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">My Entries</h1>
+    <div style={containerStyle}>
+      <h1 style={titleStyle}>My Entries</h1>
 
       {entries.length === 0 ? (
-        <p className="text-gray-500">
-          You haven&apos;t submitted any entries yet.
-        </p>
+        <p style={noEntriesStyle}>You haven&apos;t submitted any entries yet.</p>
       ) : (
-        <div className="space-y-6">
+        <div style={{ width: "100%", maxWidth: "400px", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           {entries.map((entry) => (
             <EntryDisplay key={entry.id} entry={entry} />
           ))}

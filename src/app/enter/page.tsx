@@ -12,6 +12,7 @@ type DietaryTag = Database["public"]["Enums"]["dietary_tags"];
 
 export default function EntryForm() {
   const { supabase } = useSupabase();
+  const router = useRouter();
 
   const [userId, setUserId] = useState<string | null>(null);
   const [userDisplayName, setUserDisplayName] = useState("");
@@ -26,47 +27,29 @@ export default function EntryForm() {
 
   const dietaryOptions: DietaryTag[] = ["Vegan", "Dairy-Free", "Gluten-Free", "Nut-Free"];
   const imageOptions = { maxSizeMB: 1, maxWidthOrHeight: 1024, useWebWorker: true };
-  const router = useRouter();
 
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) {
-        router.replace("/signin");
+      if (!session?.user) router.replace("/signin");
+      else {
+        setUserId(session.user.id);
+        setUserDisplayName(session.user.user_metadata?.display_name || "");
       }
+
+      const { data: contest, error } = await supabase
+        .from("contests")
+        .select("id")
+        .eq("is_active", true)
+        .limit(1)
+        .maybeSingle();
+      if (error) setMessage(`❌ ${error.message}`);
+      else if (contest) setContestId(contest.id);
+      else setMessage("❌ No active competition.");
     };
+
     checkSession();
   }, [supabase, router]);
-  // Fetch user session and active contest
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (session?.user) {
-          setUserId(session.user.id);
-          setUserDisplayName(session.user.user_metadata?.display_name || "");
-        }
-
-        const { data: contest, error } = await supabase
-          .from("contests")
-          .select("id")
-          .eq("is_active", true)
-          .limit(1)
-          .maybeSingle();
-
-        if (error) throw error;
-        if (contest) setContestId(contest.id);
-        else setMessage("❌ No active competition.");
-      } catch (err) {
-        setMessage(err instanceof Error ? `❌ ${err.message}` : "❌ Unexpected error");
-      }
-    };
-
-    fetchData();
-  }, [supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,17 +73,14 @@ export default function EntryForm() {
         const { error: uploadError } = await supabase.storage
           .from("entries-images")
           .upload(fileName, compressedFile);
-
         if (uploadError) throw uploadError;
 
         const { data: publicData } = supabase.storage
           .from("entries-images")
           .getPublicUrl(fileName);
-
         imageUrl = publicData.publicUrl;
       }
 
-      // Build entry object using Supabase generated type
       const newEntry: EntryInsert = {
         user_id: userId,
         contest_id: contestId,
@@ -127,80 +107,120 @@ export default function EntryForm() {
     setLoading(false);
   };
 
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    maxWidth: "300px",
+    padding: "0.75rem 1rem",
+    marginBottom: "1rem",
+    borderRadius: "var(--radius-md)",
+    border: "2px solid var(--color-red)",
+    fontSize: "1rem",
+    fontFamily: "var(--font-body)",
+  };
+
+  const buttonStyle: React.CSSProperties = {
+    width: "100%",
+    maxWidth: "300px",
+    padding: "0.75rem 1rem",
+    borderRadius: "var(--radius-md)",
+    fontFamily: "var(--font-body)",
+    fontSize: "1rem",
+    fontWeight: "bold",
+    cursor: "pointer",
+    border: "none",
+    backgroundColor: "var(--color-red)",
+    color: "var(--color-white)",
+    transition: "all 0.2s ease",
+    marginBottom: "0.5rem",
+  };
+
+  const checkboxLabelStyle: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: "0.5rem",
+  };
+
   return (
-    <div className="max-w-xl mx-auto p-6 bg-white shadow-md rounded-lg mt-6">
-      <h1 className="text-2xl font-bold mb-4 text-center">Submit Your Drink</h1>
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-
-        <input
-          type="text"
-          placeholder="Drink Name"
-          value={drinkName}
-          onChange={(e) => setDrinkName(e.target.value)}
-          className="border rounded p-2"
-          required
-        />
-
-        <textarea
-          placeholder="Short Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="border rounded p-2"
-          required
-        />
-
-        <textarea
-          placeholder="Ingredients / Flavours"
-          value={ingredients}
-          onChange={(e) => setIngredients(e.target.value)}
-          className="border rounded p-2"
-          required
-        />
-
-        <div className="flex flex-wrap gap-2">
-          {dietaryOptions.map((tag) => (
-            <label key={tag} className="flex items-center gap-1">
-              <input
-                type="checkbox"
-                checked={dietaryTags.includes(tag)}
-                onChange={(e) =>
-                  e.target.checked
-                    ? setDietaryTags([...dietaryTags, tag])
-                    : setDietaryTags(dietaryTags.filter((t) => t !== tag))
-                }
-              />
-              {tag}
-            </label>
-          ))}
-        </div>
-
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-primary text-white py-2 rounded hover:bg-primary/90 transition"
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "var(--color-green)",
+        padding: "2rem",
+      }}
+    >
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "400px",
+          backgroundColor: "var(--color-yellow)",
+          padding: "2rem",
+          borderRadius: "var(--radius-md)",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <h1
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "2rem",
+            marginBottom: "1rem",
+            textAlign: "center",
+            color: "var(--color-white)",
+          }}
         >
-          {loading ? "Submitting…" : "Submit Entry"}
-        </button>
-      </form>
+          Submit Your Drink
+        </h1>
 
-      {message && <p className="mt-4 text-center">{message}</p>}
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
+          <input type="text" placeholder="Drink Name" value={drinkName} onChange={(e) => setDrinkName(e.target.value)} style={inputStyle} required />
+          <textarea placeholder="Short Description" value={description} onChange={(e) => setDescription(e.target.value)} style={inputStyle} required />
+          <textarea placeholder="Ingredients / Flavours" value={ingredients} onChange={(e) => setIngredients(e.target.value)} style={inputStyle} required />
 
-      {imageFile && (
-        <Image
-          src={URL.createObjectURL(imageFile)}
-          alt="Preview"
-          width={300}
-          height={300}
-          className="mt-2 rounded"
-        />
-      )}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1rem" }}>
+            {dietaryOptions.map((tag) => (
+              <label key={tag} style={checkboxLabelStyle}>
+                <input
+                  type="checkbox"
+                  checked={dietaryTags.includes(tag)}
+                  onChange={(e) =>
+                    e.target.checked
+                      ? setDietaryTags([...dietaryTags, tag])
+                      : setDietaryTags(dietaryTags.filter((t) => t !== tag))
+                  }
+                />
+                {tag}
+              </label>
+            ))}
+          </div>
+
+          <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} style={{ marginBottom: "1rem" }} />
+
+          <button type="submit" disabled={loading} style={buttonStyle}>
+            {loading ? "Submitting…" : "Submit Entry"}
+          </button>
+        </form>
+
+        {message && (
+          <p style={{ marginTop: "1rem", textAlign: "center", color: message.startsWith("✅") ? "var(--color-white)" : "var(--color-red)" }}>
+            {message}
+          </p>
+        )}
+
+        {imageFile && (
+          <Image
+            src={URL.createObjectURL(imageFile)}
+            alt="Preview"
+            width={300}
+            height={300}
+            style={{ marginTop: "1rem", borderRadius: "var(--radius-md)" }}
+          />
+        )}
+      </div>
     </div>
   );
 }
