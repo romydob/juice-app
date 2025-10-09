@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      admins: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       contests: {
         Row: {
           end_date: string | null
@@ -85,6 +103,32 @@ export type Database = {
           },
         ]
       }
+      votes: {
+        Row: {
+          created_at: string
+          entry_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          entry_id?: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          entry_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "votes_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       winners: {
         Row: {
           contest_id: string
@@ -124,30 +168,6 @@ export type Database = {
           },
         ]
       }
-      votes: {
-      Row: {
-        id: string;           // auto-generated primary key
-        entry_id: string;     // FK to entries.id
-        created_at: string;   // timestamp
-      };
-      Insert: {
-        entry_id: string;
-        created_at?: string;  // optional, defaults to now
-      };
-      Update: {
-        entry_id?: string;
-        created_at?: string;
-      };
-      Relationships: [
-        {
-          foreignKeyName: "votes_entry_id_fkey";
-          columns: ["entry_id"];
-          isOneToOne: false;
-          referencedRelation: "entries";
-          referencedColumns: ["id"];
-        }
-      ];
-    };
     }
     Views: {
       [_ in never]: never
@@ -161,7 +181,6 @@ export type Database = {
     CompositeTypes: {
       [_ in never]: never
     }
-    
   }
 }
 
