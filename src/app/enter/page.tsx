@@ -81,7 +81,7 @@ export default function EntryForm() {
         imageUrl = publicData.publicUrl;
       }
 
-      const newEntry: EntryInsert = {
+      const entryData: EntryInsert = {
         user_id: userId,
         contest_id: contestId,
         drink_name: drinkName,
@@ -91,21 +91,26 @@ export default function EntryForm() {
         image_url: imageUrl,
       };
 
-      const { error: insertError } = await supabase.from("entries").insert([newEntry]);
-      if (insertError) throw insertError;
+      const res = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          entryData,
+          success_url: `${window.location.origin}/success`,
+          cancel_url: `${window.location.origin}/entry-form`,
+        }),
+      });
 
-      setMessage("✅ Entry submitted successfully!");
-      setDrinkName("");
-      setDescription("");
-      setIngredients("");
-      setDietaryTags([]);
-      setImageFile(null);
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+      else throw new Error(data.error || "Failed to start payment session");
     } catch (err) {
       setMessage(err instanceof Error ? `❌ ${err.message}` : "❌ Unexpected error");
+      setLoading(false);
     }
-
-    setLoading(false);
   };
+
+  
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
@@ -126,7 +131,7 @@ export default function EntryForm() {
     fontFamily: "var(--font-body)",
     fontSize: "1rem",
     fontWeight: "bold",
-    cursor: "pointer",
+    cursor: loading ? "not-allowed" : "pointer",
     border: "none",
     backgroundColor: "var(--color-red)",
     color: "var(--color-white)",
@@ -158,7 +163,6 @@ export default function EntryForm() {
           backgroundColor: "var(--color-yellow)",
           padding: "2rem",
           borderRadius: "var(--radius-md)",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
