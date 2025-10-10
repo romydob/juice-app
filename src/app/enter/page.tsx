@@ -97,7 +97,7 @@ export default function EntryForm() {
         body: JSON.stringify({
           entryData,
           success_url: `${window.location.origin}/success`,
-          cancel_url: `${window.location.origin}/entry-form`,
+          cancel_url: `${window.location.origin}/cancel`,
         }),
       });
 
