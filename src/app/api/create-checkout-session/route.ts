@@ -14,10 +14,13 @@ if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("Missing STRIPE_SECRET_KEY in environment");
 }
 
-const supabaseAdmin = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-);
+function getSupabaseAdmin() {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_KEY;
+
+  if (!url || !key) throw new Error("Supabase environment variables are not set!");
+  return createClient(url, key);
+}
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -32,6 +35,7 @@ type EntryInsert = {
 };
 
 export async function POST(req: Request) {
+    const supabaseAdmin = getSupabaseAdmin();
   try {
     const body: { entryData: EntryInsert; success_url: string; cancel_url: string } =
       await req.json();
