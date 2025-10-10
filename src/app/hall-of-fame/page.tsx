@@ -5,10 +5,17 @@ import { createClient } from "@supabase/supabase-js";
 import { Database } from "@/types/supabase";
 import EntryDisplay from "@/components/entry-displayer"; // adjust path if needed
 
-const supabase = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Lazy-loaded Supabase client
+export function getSupabaseClient() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !key) {
+    throw new Error("Supabase environment variables are not set!");
+  }
+
+  return createClient<Database>(url, key);
+}
 
 type EntryRow = Database["public"]["Tables"]["entries"]["Row"];
 
@@ -26,7 +33,9 @@ export default function HallOfFame() {
   const [selectedContest, setSelectedContest] = useState<string>("");
   const [topEntries, setTopEntries] = useState<EntryWithVotes[]>([]);
   const [loading, setLoading] = useState(false);
-  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== "undefined" ? window.innerWidth : 1200);
+  const [windowWidth, setWindowWidth] = useState<number>(
+    typeof window !== "undefined" ? window.innerWidth : 1200
+  );
 
   // Track window width for responsiveness
   useEffect(() => {
@@ -38,6 +47,7 @@ export default function HallOfFame() {
   // Fetch finished competitions
   useEffect(() => {
     async function fetchCompetitions() {
+      const supabase = getSupabaseClient(); // <- runtime only
       const { data } = await supabase
         .from("contests")
         .select("id,name")
@@ -53,11 +63,12 @@ export default function HallOfFame() {
   useEffect(() => {
     if (!selectedContest) {
       setTopEntries([]);
-      return; // Do nothing if no contest selected
+      return;
     }
 
     async function fetchTopEntries() {
       setLoading(true);
+      const supabase = getSupabaseClient(); // <- runtime only
       try {
         const { data: entries } = await supabase
           .from("entries")
@@ -136,7 +147,7 @@ export default function HallOfFame() {
           style={{
             display: "flex",
             justifyContent: "center",
-            backgroundColor: "var(--color-green)", // changed to green
+            backgroundColor: "var(--color-green)",
             padding: "3rem 1rem",
           }}
         >
